@@ -2,7 +2,11 @@ require('dotenv').config()
 const express = require('express')
 const Note = require('./models/note')
 
+
 const app = express()
+app.use(express.json())
+app.use(express.static('dist'))
+
 
 let notes = []
 
@@ -15,12 +19,11 @@ const requestLogger = (request, response, next) => {
 }
 
 app.use(requestLogger)
-app.use(express.static('dist'))
-app.use(express.json())
 
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>')
-})
+
+// app.get('/', (request, response) => {
+//   response.send('<h1>Hello World!</h1>')
+// })
 
 app.get('/api/notes', (request, response) => {
   Note.find({}).then((notes) => {
