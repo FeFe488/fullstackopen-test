@@ -25,6 +25,13 @@ app.use(requestLogger)
 //   response.send('<h1>Hello World!</h1>')
 // })
 
+app.get('/', (request, response) => {
+  Note.find({}).then((notes) => {
+    response.json(notes)
+  })
+})
+
+
 app.get('/api/notes', (request, response) => {
   Note.find({}).then((notes) => {
     response.json(notes)
