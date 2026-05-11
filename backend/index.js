@@ -4,9 +4,10 @@ const Note = require('./models/note')
 
 
 const app = express()
+
+app.use(express.static('dist'))
 app.use(express.json())
 
-let notes = []
 
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)
@@ -16,7 +17,6 @@ const requestLogger = (request, response, next) => {
   next()
 }
 
-app.use(express.static('dist'))
 app.use(requestLogger)
 
 
@@ -36,7 +36,8 @@ app.get('/api/notes/:id', (request, response,next) => {
       if(note){
         response.json(note)
       } else{
-        response.status(404).end()
+        console.log('id not found')
+        response.status(404).send('404, id not found')
       }
     })
     .catch(error=> next(error))
@@ -91,22 +92,24 @@ app.put('/api/notes/:id', (request,response, next)=>{
     .catch (error=> next(error))
 })
 
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
+
+
 const errorHandler=(error, request, response, next)=>{
  console.log(error.message)
   
   if (error.name=== "CastError"){
-    return response.status(400).send('error: malformatted id')
+    return response.status(400).send({error: 'malformatted id'})
   }
   next(error)
 }
 
 app.use(errorHandler)
 
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
-}
-
-app.use(unknownEndpoint)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
