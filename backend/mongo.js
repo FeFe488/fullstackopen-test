@@ -5,11 +5,12 @@ if (process.argv.length < 3) {
   process.exit(1)
 }
 
-const password = process.argv[2]
+const password = encodeURIComponent(process.argv[2])
 
-const url = `mongodb+srv://FeFe488:note@cluster0.ccwjjjo.mongodb.net/TestNoteApp?appName=Cluster0`
+const url = `mongodb+srv://FeFe488:${password}@cluster0.ccwjjjo.mongodb.net/TestNoteApp?retryWrites=true&w=majority&appName=Cluster0`
 
 mongoose.set('strictQuery', false)
+
 mongoose.connect(url)
 
 const noteSchema = new mongoose.Schema({
@@ -19,19 +20,21 @@ const noteSchema = new mongoose.Schema({
 
 const Note = mongoose.model('Note', noteSchema)
 
-const notes = new Note({
-  content: 'first test note',
-  important: true,
-},
-{
-  content: 'second test note',
-  important: true,
-})
+const notes = [
+  {
+    content: 'first test note',
+    important: true,
+  },
+  {
+    content: 'second test note',
+    important: false,
+  },
+]
 
 Note.insertMany(notes)
-.then(() =>{
-  console.log('notes saved')
-  return Note.find({})
+  .then(() => {
+    console.log('notes saved')
+    return Note.find({})
   })
   .then(result => {
     result.forEach(note => {
@@ -39,10 +42,7 @@ Note.insertMany(notes)
     })
     mongoose.connection.close()
   })
-
-Note.find({}).then((result) => {
-  result.forEach((note) => {
-    console.log(note)
+  .catch(error => {
+    console.log('error:', error.message)
+    mongoose.connection.close()
   })
-  mongoose.connection.close()
-})
